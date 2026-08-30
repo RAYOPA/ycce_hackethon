@@ -15,11 +15,17 @@ class PersonnelHome extends StatefulWidget {
   const PersonnelHome({super.key});
 
   @override
-  State<PersonnelHome> createState() => _PersonnelHomeState();
+  State<PersonnelHome> createState() => PersonnelHomeState();
 }
 
-class _PersonnelHomeState extends State<PersonnelHome> {
+class PersonnelHomeState extends State<PersonnelHome> {
   int _currentIndex = 0;
+
+  void setIndex(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   final List<Widget> _screens = [
     const _HomeView(),
@@ -174,10 +180,8 @@ class _HomeView extends StatelessWidget {
                       onPressed: () {
                         // Navigate to Wellness tab
                         final state = context
-                            .findAncestorStateOfType<_PersonnelHomeState>();
-                        state?.setState(() {
-                          state._currentIndex = 1; // Index of Wellness CheckIn
-                        });
+                            .findAncestorStateOfType<PersonnelHomeState>();
+                        state?.setIndex(1); // Index of Wellness CheckIn
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: secondaryTeal,
@@ -360,11 +364,9 @@ class _HomeView extends StatelessWidget {
                   const SizedBox(height: 16),
                   OutlinedButton(
                     onPressed: () {
-                      final state = context
-                          .findAncestorStateOfType<_PersonnelHomeState>();
-                      state?.setState(() {
-                        state._currentIndex = 3; // Index of Support Screen
-                      });
+                      final state =
+                          context.findAncestorStateOfType<PersonnelHomeState>();
+                      state?.setIndex(3); // Index of Support Screen
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: secondaryTeal,
