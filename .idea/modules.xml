@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/SIH Manrakshak.iml" filepath="$PROJECT_DIR$/.idea/SIH Manrakshak.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mobile_app/windows/flutter/ephemeral/.plugin_symlinks/jni/android/android.iml" filepath="$PROJECT_DIR$/mobile_app/windows/flutter/ephemeral/.plugin_symlinks/jni/android/android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mobile_app/windows/flutter/ephemeral/.plugin_symlinks/jni/java/jni.iml" filepath="$PROJECT_DIR$/mobile_app/windows/flutter/ephemeral/.plugin_symlinks/jni/java/jni.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mobile_app/windows/flutter/ephemeral/.plugin_symlinks/jni/example/android/app/src/main/kotlin/kotlin.iml" filepath="$PROJECT_DIR$/mobile_app/windows/flutter/ephemeral/.plugin_symlinks/jni/example/android/app/src/main/kotlin/kotlin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mobile_app/windows/flutter/ephemeral/.plugin_symlinks/jni/example/android/app/src/main/main.iml" filepath="$PROJECT_DIR$/mobile_app/windows/flutter/ephemeral/.plugin_symlinks/jni/example/android/app/src/main/main.iml" />
+    </modules>
+  </component>
+</project>
