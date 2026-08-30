@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'features/personnel/home_screen.dart';
-import 'features/welfare/welfare_dashboard.dart';
-import 'features/commander/commander_dashboard.dart';
+import 'core/theme/app_theme.dart';
+import 'features/auth/login_screen.dart';
 
 // Entry Point
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // TODO: Add firebase_options.dart and use DefaultFirebaseOptions.currentPlatform
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
   runApp(
     MultiProvider(
       providers: [
@@ -24,16 +27,10 @@ class ManRakshakApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ManRakshak',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0D47A1), // Navy Blue primary
-          secondary: const Color(0xFF00897B), // Teal secondary
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        fontFamily: 'Roboto',
-      ),
-      home: const SplashScreen(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system, // Uses system setting for light/dark
+      home: const LoginScreen(),
     );
   }
 }
@@ -62,107 +59,6 @@ class AuthProvider extends ChangeNotifier {
   }
 }
 
-// Splash Screen
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
 
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.shield, size: 80, color: Color(0xFF0D47A1)),
-            SizedBox(height: 16),
-            Text(
-              'ManRakshak',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0D47A1),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Login Screen
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final idController = TextEditingController();
-    final pwdController = TextEditingController();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: idController,
-              decoration: const InputDecoration(
-                labelText: 'Personnel ID',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: pwdController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                context.read<AuthProvider>().login(idController.text, pwdController.text);
-                
-                final role = context.read<AuthProvider>().currentUserRole;
-                Widget target;
-                if (role == 'Welfare') {
-                  target = const WelfareDashboard();
-                } else if (role == 'Commander') {
-                  target = const CommanderDashboard();
-                } else {
-                  target = const PersonnelHome();
-                }
-
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => target),
-                );
-              },
-              child: const Text('Login'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // End of main.dart
