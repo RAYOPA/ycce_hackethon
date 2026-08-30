@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../main.dart'; // For AuthProvider
 import '../auth/login_screen.dart';
+
 class CommanderDashboard extends StatelessWidget {
   const CommanderDashboard({super.key});
 
@@ -31,26 +32,27 @@ class CommanderDashboard extends StatelessWidget {
           children: [
             const Text(
               'Unit Wellness Trends',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0D47A1)),
             ),
             const SizedBox(height: 16),
-            
             _buildTrendCard('Stress Trend', '↑ 14%', Colors.red),
             const SizedBox(height: 12),
             _buildTrendCard('Fatigue Trend', '↑ 8%', Colors.orange),
             const SizedBox(height: 12),
             _buildTrendCard('Workload Trend', '↑ 11%', Colors.orange),
-            
             const SizedBox(height: 32),
             const Text(
               'Organizational Recommendations',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Column(
@@ -61,12 +63,14 @@ class CommanderDashboard extends StatelessWidget {
                     ),
                     Divider(),
                     ListTile(
-                      leading: Icon(Icons.trending_up, color: Color(0xFF0D47A1)),
+                      leading:
+                          Icon(Icons.trending_up, color: Color(0xFF0D47A1)),
                       title: Text('Review workload trends'),
                     ),
                     Divider(),
                     ListTile(
-                      leading: Icon(Icons.health_and_safety, color: Color(0xFF0D47A1)),
+                      leading: Icon(Icons.health_and_safety,
+                          color: Color(0xFF0D47A1)),
                       title: Text('Strengthen welfare availability'),
                     ),
                   ],
@@ -81,9 +85,12 @@ class CommanderDashboard extends StatelessWidget {
         selectedItemColor: const Color(0xFF0D47A1),
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: 'Overview'),
-          BottomNavigationBarItem(icon: Icon(Icons.show_chart), label: 'Trends'),
-          BottomNavigationBarItem(icon: Icon(Icons.library_books), label: 'Resources'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.pie_chart), label: 'Overview'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.show_chart), label: 'Trends'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.library_books), label: 'Resources'),
         ],
       ),
     );
@@ -98,8 +105,14 @@ class CommanderDashboard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
-            Text(trend, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: trendColor)),
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+            Text(trend,
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: trendColor)),
           ],
         ),
       ),

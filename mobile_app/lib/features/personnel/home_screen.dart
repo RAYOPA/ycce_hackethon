@@ -57,11 +57,26 @@ class _PersonnelHomeState extends State<PersonnelHome> {
           unselectedItemColor: Colors.grey.shade400,
           elevation: 0,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite_outline), activeIcon: Icon(Icons.favorite), label: 'Wellness'),
-            BottomNavigationBarItem(icon: Icon(Icons.history_outlined), activeIcon: Icon(Icons.history), label: 'History'),
-            BottomNavigationBarItem(icon: Icon(Icons.support_agent_outlined), activeIcon: Icon(Icons.support_agent), label: 'Support'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Home'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.favorite_outline),
+                activeIcon: Icon(Icons.favorite),
+                label: 'Wellness'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.history_outlined),
+                activeIcon: Icon(Icons.history),
+                label: 'History'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.support_agent_outlined),
+                activeIcon: Icon(Icons.support_agent),
+                label: 'Support'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Profile'),
           ],
         ),
       ),
@@ -101,7 +116,8 @@ class _HomeView extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.notifications_none, color: primaryNavy),
+                      icon: const Icon(Icons.notifications_none,
+                          color: primaryNavy),
                       onPressed: () {},
                     ),
                     const CircleAvatar(
@@ -157,7 +173,8 @@ class _HomeView extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         // Navigate to Wellness tab
-                        final state = context.findAncestorStateOfType<_PersonnelHomeState>();
+                        final state = context
+                            .findAncestorStateOfType<_PersonnelHomeState>();
                         state?.setState(() {
                           state._currentIndex = 1; // Index of Wellness CheckIn
                         });
@@ -174,7 +191,9 @@ class _HomeView extends StatelessWidget {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Start Check-in', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text('Start Check-in',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
                           SizedBox(width: 8),
                           Icon(Icons.arrow_forward, size: 20),
                         ],
@@ -196,9 +215,11 @@ class _HomeView extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.bedtime_outlined, color: mutedGreen, size: 20),
+                            Icon(Icons.bedtime_outlined,
+                                color: mutedGreen, size: 20),
                             SizedBox(width: 8),
-                            Text('Sleep', style: TextStyle(color: Colors.black54)),
+                            Text('Sleep',
+                                style: TextStyle(color: Colors.black54)),
                           ],
                         ),
                         SizedBox(height: 12),
@@ -224,7 +245,8 @@ class _HomeView extends StatelessWidget {
                           children: [
                             Icon(Icons.mood, color: secondaryTeal, size: 20),
                             SizedBox(width: 8),
-                            Text('Mood', style: TextStyle(color: Colors.black54)),
+                            Text('Mood',
+                                style: TextStyle(color: Colors.black54)),
                           ],
                         ),
                         SizedBox(height: 12),
@@ -298,8 +320,12 @@ class _HomeView extends StatelessWidget {
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('7 days ago', style: TextStyle(color: Colors.black38, fontSize: 12)),
-                      Text('Today', style: TextStyle(color: Colors.black38, fontSize: 12)),
+                      Text('7 days ago',
+                          style:
+                              TextStyle(color: Colors.black38, fontSize: 12)),
+                      Text('Today',
+                          style:
+                              TextStyle(color: Colors.black38, fontSize: 12)),
                     ],
                   ),
                 ],
@@ -334,7 +360,8 @@ class _HomeView extends StatelessWidget {
                   const SizedBox(height: 16),
                   OutlinedButton(
                     onPressed: () {
-                      final state = context.findAncestorStateOfType<_PersonnelHomeState>();
+                      final state = context
+                          .findAncestorStateOfType<_PersonnelHomeState>();
                       state?.setState(() {
                         state._currentIndex = 3; // Index of Support Screen
                       });
@@ -345,9 +372,11 @@ class _HomeView extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 24),
                     ),
-                    child: const Text('Get Welfare Support', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text('Get Welfare Support',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

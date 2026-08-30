@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../main.dart'; // For AuthProvider
 import '../auth/login_screen.dart';
+
 class WelfareDashboard extends StatelessWidget {
   const WelfareDashboard({super.key});
 
@@ -31,7 +32,10 @@ class WelfareDashboard extends StatelessWidget {
           children: [
             const Text(
               'Unit Overview',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0D47A1)),
             ),
             const SizedBox(height: 16),
             GridView.count(
@@ -67,7 +71,8 @@ class WelfareDashboard extends StatelessWidget {
                       child: Icon(Icons.person, color: Colors.white),
                     ),
                     title: Text('Personnel ID: $id'),
-                    subtitle: Text('Status: ${index == 0 ? "Elevated Risk" : "Stable"}'),
+                    subtitle: Text(
+                        'Status: ${index == 0 ? "Elevated Risk" : "Stable"}'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       // TODO: Navigate to Personnel Details
@@ -84,9 +89,11 @@ class WelfareDashboard extends StatelessWidget {
         selectedItemColor: const Color(0xFF0D47A1),
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard), label: 'Dashboard'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Personnel'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Follow-ups'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.assignment), label: 'Follow-ups'),
         ],
       ),
     );
@@ -103,7 +110,8 @@ class WelfareDashboard extends StatelessWidget {
           children: [
             Text(
               value,
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: color),
+              style: TextStyle(
+                  fontSize: 32, fontWeight: FontWeight.bold, color: color),
             ),
             const SizedBox(height: 8),
             Text(

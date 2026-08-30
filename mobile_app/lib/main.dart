@@ -8,7 +8,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // TODO: Add firebase_options.dart and use DefaultFirebaseOptions.currentPlatform
   // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
   runApp(
     MultiProvider(
       providers: [
@@ -58,7 +58,5 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
-
-
 
 // End of main.dart

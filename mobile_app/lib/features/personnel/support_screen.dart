@@ -18,7 +18,8 @@ class SupportScreen extends StatelessWidget {
           children: [
             Icon(Icons.support_agent, size: 80, color: theme.primaryColor),
             const SizedBox(height: 16),
-            Text('Support Dashboard Placeholder', style: theme.textTheme.headlineSmall),
+            Text('Support Dashboard Placeholder',
+                style: theme.textTheme.headlineSmall),
           ],
         ),
       ),
