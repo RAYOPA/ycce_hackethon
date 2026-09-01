@@ -1,8 +1,14 @@
 import os
-import joblib
-import shap
-import pandas as pd
 from typing import Dict, Any
+
+try:
+    import joblib
+    import shap
+    import pandas as pd
+except ImportError:
+    joblib = None
+    shap = None
+    pandas = None
 
 class AIService:
     def __init__(self):
@@ -18,11 +24,15 @@ class AIService:
         base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
         models_dir = os.path.join(base_path, 'ai_engine', 'models')
         
+        if not joblib:
+            return
+            
         try:
             self.calibrated_model = joblib.load(os.path.join(models_dir, 'calibrated_xgboost.pkl'))
             self.feature_names = joblib.load(os.path.join(models_dir, 'feature_names.pkl'))
             self.model = joblib.load(os.path.join(models_dir, 'base_xgboost_for_shap.pkl'))
-            self.explainer = shap.TreeExplainer(self.model)
+            if shap:
+                self.explainer = shap.TreeExplainer(self.model)
         except Exception as e:
             print(f"Warning: Could not load AI models from {models_dir}: {e}")
             

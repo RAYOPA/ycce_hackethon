@@ -1,10 +1,9 @@
+import 'package:flutter/foundation.dart';
+
 class Constants {
-  // IMPORTANT: For running on a physical mobile device, you must change this 
-  // to your computer's local network IP address (e.g. 192.168.1.5).
-  // 
-  // 127.0.0.1 = localhost (Works for Web/Desktop only)
-  // 10.0.2.2 = Default alias to host machine for Android Emulators
-  
-  // Use 10.0.2.2 for Android Emulator, or your local IP for physical device
-  static const String apiBaseUrl = 'http://10.0.2.2:8000/api/v1'; 
+  static const String _publicTunnelUrl = 'https://effectiveness-representation-mature-yet.trycloudflare.com/api/v1';
+  static const String _localUrl = 'http://127.0.0.1:8000/api/v1';
+
+  // Automatically connects to local backend when tested on Web/Desktop, and public tunnel on phone!
+  static String get apiBaseUrl => kIsWeb ? _localUrl : _publicTunnelUrl;
 }

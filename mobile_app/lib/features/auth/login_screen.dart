@@ -92,13 +92,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           // Logo
                           Center(
-                            child: Icon(
-                              Icons.shield,
-                              size: 80,
-                              color: theme.primaryColor,
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              height: 110,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => Icon(
+                                Icons.shield,
+                                size: 80,
+                                color: theme.primaryColor,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
 
                           Text(
                             'Login',

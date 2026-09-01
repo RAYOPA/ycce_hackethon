@@ -2,3 +2,12 @@ venv/
 __pycache__/
 *.pyc
 models/
+*.exe
+*.zip
+*.apk
+cmake/
+.idea/
+*.db
+backend/*.db
+
+

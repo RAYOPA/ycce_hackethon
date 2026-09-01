@@ -1,18 +1,16 @@
 @echo off
-set ANDROID_PREFS_ROOT=
-set JAVA_HOME=C:\Program Files\Android\Android Studio1\jbr
-set PATH=%JAVA_HOME%\bin;%PATH%
+set "JAVA_HOME=C:\Program Files\Android\Android Studio1\jbr"
+set "PATH=%JAVA_HOME%\bin;%PATH%"
 
-echo [1/3] Ensuring phone is still connected...
-"C:\Users\Lenovo\AppData\Local\Android\Sdk\platform-tools\adb.exe" devices
+cd /d "c:\Users\Lenovo\Desktop\Mayank\Codes\SIH Manrakshak\mobile_app"
 
-echo [2/3] Cleaning build to avoid lock issues...
-cd mobile_app
-call flutter clean
-call flutter pub get
+echo =======================================================
+echo  Launching Live App on Your Phone with HOT-RELOAD
+echo =======================================================
+echo.
+echo TIP: Once running, press 'r' in this window to hot-reload 
+echo      code changes instantly on your phone!
+echo.
 
-echo [3/3] Launching app on your phone...
-:: Use the specific device ID we found
-call flutter run -d cex4kvw89565on4h
-
+call flutter run
 pause

@@ -27,6 +27,10 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        ndk {
+            // Only build for arm64 to prevent Windows file-locking during parallel ABI compilation
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     buildTypes {

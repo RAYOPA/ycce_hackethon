@@ -23,12 +23,13 @@ from pydantic import field_validator
 
 class UserRegister(BaseModel):
     name: str
-    user_code: str = "123456" # Hardcoded user ID as per requirements
+    email: EmailStr
+    password: str
+    user_code: Optional[str] = None
+    role: Optional[UserRole] = UserRole.PERSONNEL
     address: Optional[str] = None
     team: Optional[str] = None
     mobile_number: Optional[str] = None
-    email: EmailStr
-    password: str
     
     @field_validator('password')
     @classmethod

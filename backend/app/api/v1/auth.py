@@ -25,62 +25,91 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserRegister, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == user_in.email).first()
+    email_clean = user_in.email.strip().lower()
+    user = db.query(User).filter(User.email.ilike(email_clean)).first()
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user with this email already exists in the system.",
+            detail="An account with this email already exists.",
         )
     
+    # Check custom user code if provided
+    if user_in.user_code and user_in.user_code.strip():
+        code_clean = user_in.user_code.strip()
+        existing_code_user = db.query(User).filter(User.user_code.ilike(code_clean)).first()
+        if existing_code_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This Personnel ID / User Code is already registered.",
+            )
+        unique_user_code = code_clean
+    else:
+        unique_user_code = f"P{uuid.uuid4().hex[:8].upper()}"
+
     org = db.query(Organization).first()
     if not org:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No organization found to assign the user.",
-        )
+        org_id = str(uuid.uuid4())
+        org = Organization(id=org_id, organization_code="DEMO-ORG", name="Headquarters")
+        db.add(org)
+        db.commit()
+        db.refresh(org)
         
-    unique_user_code = f"P{uuid.uuid4().hex[:8].upper()}"
+    from app.models.unit import Unit
+    unit = db.query(Unit).filter(Unit.organization_id == org.id).first()
+    if not unit:
+        unit = Unit(organization_id=org.id, unit_code="U-ALPHA", unit_name="Alpha Unit")
+        db.add(unit)
+        db.commit()
+        db.refresh(unit)
+
+    user_role = user_in.role if user_in.role else UserRole.PERSONNEL
         
-    user = User(
-        email=user_in.email,
-        name=user_in.name,
+    new_user = User(
+        email=email_clean,
+        name=user_in.name.strip(),
         user_code=unique_user_code,
         password_hash=get_password_hash(user_in.password),
-        role=UserRole.PERSONNEL,
+        role=user_role,
         organization_id=org.id,
+        unit_id=unit.id if unit else None,
         address=user_in.address,
         team=user_in.team,
         mobile_number=user_in.mobile_number,
+        status=UserStatus.ACTIVE,
     )
     
-    db.add(user)
+    db.add(new_user)
     db.commit()
-    db.refresh(user)
+    db.refresh(new_user)
     
     audit = AuditLog(
-        user_id=user.id,
+        user_id=new_user.id,
         action=AuditAction.CREATE_USER,
         resource_type="USER",
-        resource_id=user.id
+        resource_id=new_user.id
     )
     db.add(audit)
     db.commit()
     
-    return user
+    return new_user
 
 @router.post("/login", response_model=Token)
 def login(login_data: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == login_data.email).first()
+    identifier = login_data.email.strip()
+    user = db.query(User).filter(
+        (User.email.ilike(identifier)) | (User.user_code.ilike(identifier))
+    ).first()
+    
     if not user or not verify_password(login_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Invalid email/ID or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if user.status != UserStatus.ACTIVE:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Invalid email or password"
+            detail="User account is inactive"
         )
 
     user.last_login_at = datetime.now(timezone.utc)

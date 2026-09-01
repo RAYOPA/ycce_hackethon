@@ -58,18 +58,71 @@ class AuthProvider extends ChangeNotifier {
       _token = data['access_token'];
       
       final role = data['user']['role'] as String;
-      // Map backend roles to frontend expected roles if needed
+      // Map backend roles to frontend expected roles
       if (role == 'COMMANDER') {
         _currentUserRole = 'Commander';
-      } else if (role == 'WELFARE') {
+      } else if (role == 'WELFARE_OFFICER' || role == 'WELFARE') {
         _currentUserRole = 'Welfare';
       } else {
         _currentUserRole = 'Personnel';
       }
       notifyListeners();
     } else {
-      final error = jsonDecode(response.body);
-      throw Exception(error['detail'] ?? 'Failed to login');
+      String message = 'Failed to login (${response.statusCode})';
+      try {
+        final error = jsonDecode(response.body);
+        if (error is Map && error.containsKey('detail')) {
+          message = error['detail'].toString();
+        }
+      } catch (_) {}
+      throw Exception(message);
+    }
+  }
+
+  Future<void> register({
+    required String name,
+    required String email,
+    required String password,
+    String? userCode,
+    String? role,
+    String? mobileNumber,
+  }) async {
+    final url = Uri.parse('${Constants.apiBaseUrl}/auth/register');
+    
+    // Map frontend role string to backend enum
+    String backendRole = 'PERSONNEL';
+    if (role == 'Commander') {
+      backendRole = 'COMMANDER';
+    } else if (role == 'Welfare Officer' || role == 'Welfare') {
+      backendRole = 'WELFARE_OFFICER';
+    }
+
+    final payload = {
+      'name': name.trim(),
+      'email': email.trim().toLowerCase(),
+      'password': password,
+      'user_code': (userCode != null && userCode.trim().isNotEmpty) ? userCode.trim() : null,
+      'role': backendRole,
+      'mobile_number': (mobileNumber != null && mobileNumber.trim().isNotEmpty) ? mobileNumber.trim() : null,
+    };
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return;
+    } else {
+      String message = 'Registration failed (${response.statusCode})';
+      try {
+        final error = jsonDecode(response.body);
+        if (error is Map && error.containsKey('detail')) {
+          message = error['detail'].toString();
+        }
+      } catch (_) {}
+      throw Exception(message);
     }
   }
 

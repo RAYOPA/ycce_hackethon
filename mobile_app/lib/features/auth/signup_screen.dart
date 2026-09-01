@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../main.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -20,10 +22,11 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _agreePrivacy = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
 
   final List<String> _roles = ['Personnel', 'Welfare Officer', 'Commander'];
 
-  void _handleSignup() {
+  Future<void> _handleSignup() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -40,13 +43,47 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    // TODO: Implement actual signup logic via API
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Account Created Successfully')),
-    );
+    setState(() {
+      _isLoading = true;
+    });
 
-    // Go back to login screen
-    Navigator.of(context).pop();
+    try {
+      await context.read<AuthProvider>().register(
+        name: nameController.text,
+        email: emailController.text,
+        password: pwdController.text,
+        userCode: idController.text,
+        role: _selectedRole,
+        mobileNumber: phoneController.text,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account Created Successfully! Please log in.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Go back to login screen
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _showPrivacyPolicy() {
@@ -101,13 +138,18 @@ class _SignupScreenState extends State<SignupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Center(
-                      child: Icon(
-                        Icons.shield,
-                        size: 60,
-                        color: theme.primaryColor,
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        height: 90,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.shield,
+                          size: 60,
+                          color: theme.primaryColor,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     Text(
                       'Join ManRakshak',
                       style: theme.textTheme.headlineMedium?.copyWith(
@@ -219,15 +261,21 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     // Signup Button
                     ElevatedButton(
-                      onPressed: _handleSignup,
+                      onPressed: _isLoading ? null : _handleSignup,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text(
+                              'Sign Up',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
                     ),
                     const SizedBox(height: 24),
                   ],

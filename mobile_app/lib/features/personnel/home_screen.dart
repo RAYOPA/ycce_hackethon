@@ -105,11 +105,16 @@ class _HomeView extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.shield, color: secondaryTeal, size: 28),
-                    SizedBox(width: 8),
-                    Text(
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 32,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.shield, color: secondaryTeal, size: 28),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
                       'ManRakshak',
                       style: TextStyle(
                         color: primaryNavy,
