@@ -4,6 +4,6 @@
 
 @layer base {
   body {
-    @apply bg-background-light text-slate-800 antialiased;
+    @apply bg-helios-background text-helios-text antialiased;
   }
 }

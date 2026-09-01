@@ -19,26 +19,51 @@ class _LoginScreenState extends State<LoginScreen> {
   final pwdController = TextEditingController();
   bool _rememberMe = false;
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    context.read<AuthProvider>().login(idController.text, pwdController.text);
+    
+    setState(() {
+      _isLoading = true;
+    });
 
-    final role = context.read<AuthProvider>().currentUserRole;
-    Widget target;
-    if (role == 'Welfare') {
-      target = const WelfareDashboard();
-    } else if (role == 'Commander') {
-      target = const CommanderDashboard();
-    } else {
-      target = const PersonnelHome();
+    try {
+      await context.read<AuthProvider>().login(idController.text, pwdController.text);
+
+      if (!mounted) return;
+
+      final role = context.read<AuthProvider>().currentUserRole;
+      Widget target;
+      if (role == 'Welfare') {
+        target = const WelfareDashboard();
+      } else if (role == 'Commander') {
+        target = const CommanderDashboard();
+      } else {
+        target = const PersonnelHome();
+      }
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => target),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
-
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => target),
-    );
   }
 
   @override
@@ -184,23 +209,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Login Button
                           ElevatedButton(
-                            onPressed: _handleLogin,
+                            onPressed: _isLoading ? null : _handleLogin,
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Login',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward),
-                              ],
-                            ),
+                            child: _isLoading 
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Login',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.arrow_forward),
+                                    ],
+                                  ),
                           ),
                           const SizedBox(height: 32),
 

@@ -25,7 +25,7 @@ export const InterventionsPage: React.FC = () => {
   // Summary counts
   const [counts, setCounts] = useState({ dueToday: 0, upcoming: 0, inProgress: 0, completed: 0 });
 
-  const mockUserRole = 'Welfare Officer';
+  const mockUserRole: string = 'Welfare Officer';
 
   const loadData = async () => {
     setLoading(true);

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'core/theme/app_theme.dart';
+import 'core/constants.dart';
 import 'features/auth/login_screen.dart';
 
 // Entry Point
@@ -35,26 +38,44 @@ class ManRakshakApp extends StatelessWidget {
   }
 }
 
-// Mock Auth Provider
+// Auth Provider connected to Backend
 class AuthProvider extends ChangeNotifier {
   String? _currentUserRole;
   String? get currentUserRole => _currentUserRole;
+  String? _token;
+  String? get token => _token;
 
-  void login(String id, String password) {
-    if (id.startsWith('P')) {
-      _currentUserRole = 'Personnel';
-    } else if (id.startsWith('W')) {
-      _currentUserRole = 'Welfare';
-    } else if (id.startsWith('C')) {
-      _currentUserRole = 'Commander';
+  Future<void> login(String email, String password) async {
+    final url = Uri.parse('${Constants.apiBaseUrl}/auth/login');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      _token = data['access_token'];
+      
+      final role = data['user']['role'] as String;
+      // Map backend roles to frontend expected roles if needed
+      if (role == 'COMMANDER') {
+        _currentUserRole = 'Commander';
+      } else if (role == 'WELFARE') {
+        _currentUserRole = 'Welfare';
+      } else {
+        _currentUserRole = 'Personnel';
+      }
+      notifyListeners();
     } else {
-      _currentUserRole = 'Personnel'; // Default fallback
+      final error = jsonDecode(response.body);
+      throw Exception(error['detail'] ?? 'Failed to login');
     }
-    notifyListeners();
   }
 
   void logout() {
     _currentUserRole = null;
+    _token = null;
     notifyListeners();
   }
 }

@@ -31,7 +31,7 @@ export const Layout: React.FC = () => {
   const filteredBottomItems = bottomItems.filter(item => user && item.roles.includes(user.role));
 
   return (
-    <div className="flex h-screen bg-background-light overflow-hidden">
+    <div className="flex h-screen bg-helios-background overflow-hidden">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -42,16 +42,16 @@ export const Layout: React.FC = () => {
 
       {/* Sidebar */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-primary-navy text-white transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 flex flex-col ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-helios-card text-white transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 flex flex-col border-r border-white/5 shadow-2xl ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Shield className="text-secondary-teal" size={32} />
-            <span className="text-xl font-bold tracking-tight">ManRakshak</span>
+            <Shield className="text-white" size={28} />
+            <span className="text-xl font-medium tracking-tight">ManRakshak</span>
           </div>
-          <button className="md:hidden text-slate-300" onClick={() => setSidebarOpen(false)}>
+          <button className="md:hidden text-helios-muted" onClick={() => setSidebarOpen(false)}>
             <X size={24} />
           </button>
         </div>
@@ -62,25 +62,31 @@ export const Layout: React.FC = () => {
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
-                  isActive ? 'bg-secondary-teal text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                `flex items-center gap-3 px-4 py-3 rounded-2xl font-medium transition-all duration-300 ${
+                  isActive 
+                  ? 'bg-gradient-to-r from-helios-purple/20 to-helios-pink/10 border border-helios-purple/30 text-white shadow-[0_0_15px_rgba(147,51,234,0.15)]' 
+                  : 'text-helios-muted hover:bg-white/5 hover:text-white border border-transparent'
                 }`
               }
             >
-              <item.icon size={20} />
-              {item.name}
+              {({ isActive }) => (
+                <>
+                  <item.icon size={20} className={isActive ? "text-helios-primary" : ""} />
+                  {item.name}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-4 space-y-2 border-t border-white/10">
+        <div className="p-4 space-y-2 border-t border-white/5">
           {filteredBottomItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
-                  isActive ? 'bg-secondary-teal text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                `flex items-center gap-3 px-4 py-3 rounded-2xl font-medium transition-colors ${
+                  isActive ? 'bg-white/10 text-white' : 'text-helios-muted hover:bg-white/5 hover:text-white'
                 }`
               }
             >
@@ -90,7 +96,7 @@ export const Layout: React.FC = () => {
           ))}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full text-left rounded-lg font-medium text-slate-300 hover:bg-attention/20 hover:text-attention transition-colors"
+            className="flex items-center gap-3 px-4 py-3 w-full text-left rounded-2xl font-medium text-helios-muted hover:bg-red-500/10 hover:text-red-400 transition-colors"
           >
             <LogOut size={20} />
             Logout
@@ -101,44 +107,46 @@ export const Layout: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Topbar */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-30 shadow-sm">
+        <header className="h-20 bg-transparent flex items-center justify-between px-8 shrink-0 z-30">
           <div className="flex items-center gap-4">
-            <button className="md:hidden text-slate-500" onClick={() => setSidebarOpen(true)}>
+            <button className="md:hidden text-helios-muted" onClick={() => setSidebarOpen(true)}>
               <Menu size={24} />
             </button>
-            <div className="hidden sm:flex items-center bg-slate-100 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 border border-slate-200">
-              <span className="text-secondary-teal mr-2">●</span> Unit: {user?.unit || 'Unknown'}
+            <div className="hidden sm:flex flex-col">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">Welcome, {user?.name.split(' ')[0]}</h2>
+              <p className="text-sm text-helios-muted">Here's your personnel welfare overview</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <NavLink to="/notifications" className={({ isActive }) => `p-2 rounded-full transition-colors relative ${isActive ? 'text-secondary-teal bg-teal-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}>
-              <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-critical rounded-full border border-white"></span>
+          <div className="flex items-center gap-5">
+            {/* Ask AI Search Bar */}
+            <div className="hidden lg:flex items-center bg-helios-card/80 border border-white/5 rounded-full px-4 py-2.5 shadow-lg backdrop-blur-md">
+               <Shield size={16} className="text-helios-muted mr-2" />
+               <input type="text" placeholder="Ask manrakshak.ai anything" className="bg-transparent border-none outline-none text-sm text-white placeholder-helios-muted w-48" />
+            </div>
+
+            <NavLink to="/notifications" className="p-3 rounded-full transition-colors relative bg-helios-card border border-white/5 text-helios-muted hover:text-white shadow-lg">
+              <Bell size={18} />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-helios-pink rounded-full"></span>
             </NavLink>
-            <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-slate-800">{user?.name}</p>
-                <p className="text-xs text-slate-500">{user?.role}</p>
-              </div>
-              <div className="h-9 w-9 bg-primary-navy rounded-full flex items-center justify-center text-white font-bold text-sm">
+            <button className="p-3 rounded-full transition-colors bg-helios-card border border-white/5 text-helios-muted hover:text-white shadow-lg hidden sm:block">
+              <Settings size={18} />
+            </button>
+            
+            <div className="flex items-center gap-3 pl-2">
+              <div className="h-10 w-10 bg-gradient-to-tr from-helios-purple to-helios-pink rounded-full flex items-center justify-center text-white font-bold text-sm shadow-[0_0_15px_rgba(219,39,119,0.3)]">
                 {user?.name.charAt(0) || 'U'}
+              </div>
+              <div className="text-left hidden md:block">
+                <p className="text-sm font-medium text-white">{user?.name}</p>
+                <p className="text-xs text-helios-muted">{user?.role}</p>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Demo Indicator */}
-        <div className="bg-amber-50 border-b border-amber-200 px-6 py-1.5 flex items-center justify-center gap-2">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-          </span>
-          <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">Prototype / Demo Environment</p>
-        </div>
-
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-auto bg-background-light">
+        <div className="flex-1 overflow-auto bg-helios-background">
           <Outlet />
         </div>
       </main>

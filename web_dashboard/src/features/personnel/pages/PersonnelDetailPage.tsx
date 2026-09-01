@@ -17,7 +17,7 @@ export const PersonnelDetailPage: React.FC = () => {
 
   // Mocking the logged-in user role (for the "Commander Restriction" requirement)
   // In a real app this would come from an AuthContext
-  const mockUserRole = 'Welfare Officer'; 
+  const mockUserRole: string = 'Welfare Officer'; 
 
   useEffect(() => {
     const loadPersonnel = async () => {
