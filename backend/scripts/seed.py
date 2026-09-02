@@ -30,6 +30,19 @@ def seed():
     db.commit()
     db.refresh(org)
     
+    # Create Organization Settings
+    from app.models.settings import OrganizationSettings
+    from app.models.enums import CheckinFrequency
+    settings = OrganizationSettings(
+        organization_id=org.id,
+        checkin_frequency=CheckinFrequency.DAILY,
+        minimum_analytics_cohort_size=5,
+        timezone="UTC",
+        notifications_enabled=True
+    )
+    db.add(settings)
+    db.commit()
+    
     # Create Units
     units = []
     for i in range(1, 5):

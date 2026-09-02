@@ -47,7 +47,6 @@ def require_roles(*allowed_roles: UserRole):
     return role_checker
 
 require_personnel = require_roles(UserRole.PERSONNEL)
-require_welfare_officer = require_roles(UserRole.WELFARE_OFFICER, UserRole.ADMINISTRATOR)
-require_commander = require_roles(UserRole.COMMANDER, UserRole.ADMINISTRATOR)
+require_welfare_officer = require_roles(UserRole.WELFARE_OFFICER)
+require_commander = require_roles(UserRole.COMMANDER)
 require_admin = require_roles(UserRole.ADMINISTRATOR)
-

@@ -14,9 +14,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
-    # CORS
-    CORS_ORIGINS: str = ""
+    # Analytics Privacy
+    ANALYTICS_MIN_COHORT_SIZE: int = 5
+    # Rate Limiting
+    RATE_LIMIT_LOGIN: int = 5 # requests per minute
     
+    # CORS
+    CORS_ORIGINS: str = "" # Comma separated list. Use * for all in dev if needed, but not allowed with allow_credentials=True in prod
     model_config = SettingsConfigDict(
         env_file=".env", 
         env_file_encoding="utf-8", 

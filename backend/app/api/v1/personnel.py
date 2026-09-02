@@ -1,53 +1,56 @@
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.user import User
-from app.models.audit import AuditLog
-from app.schemas.user import UserResponse
+from app.models.enums import UserStatus
 from app.api.deps import get_current_user
+from app.schemas.personnel import PersonnelResponse, PersonnelMeResponse, PersonnelListResponse
+from app.services.personnel_service import get_personnel_list, get_personnel_by_id, get_personnel_me
 
 router = APIRouter()
 
-@router.get("", response_model=List[UserResponse])
-def get_personnel(
+@router.get("", response_model=PersonnelListResponse, summary="Get Organization Personnel List")
+def list_personnel(
+    search: Optional[str] = Query(None, description="Search by name or personnel code"),
+    unit_id: Optional[str] = Query(None, description="Filter by unit ID"),
+    status: Optional[UserStatus] = Query(None, description="Filter by status (ACTIVE/INACTIVE)"),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    request: Request = None
+):
+    ip_address = request.client.host if request and request.client else None
+    return get_personnel_list(
+        db=db,
+        current_user=current_user,
+        search=search,
+        unit_id=unit_id,
+        status_filter=status,
+        page=page,
+        page_size=page_size,
+        ip_address=ip_address
+    )
+
+@router.get("/me", response_model=PersonnelMeResponse, summary="Get Current Personnel Profile")
+def get_me(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    if current_user.role == "PERSONNEL":
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-        
-    query = db.query(User).filter(User.role == "PERSONNEL")
-    
-    # Commanders only see their unit or all if global, etc.
-    # For now we just return personnel for welfare/commander/admin
-    
-    return query.all()
+    return get_personnel_me(db=db, current_user=current_user)
 
-@router.get("/{personnel_id}", response_model=UserResponse)
-def get_personnel_by_id(
+@router.get("/{personnel_id}", response_model=PersonnelResponse, summary="Get Personnel Details by ID")
+def get_personnel(
     personnel_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    request: Request = None
 ):
-    if current_user.role == "COMMANDER":
-        raise HTTPException(status_code=403, detail="Commanders cannot view individual personnel records")
-        
-    if current_user.role == "PERSONNEL" and current_user.id != personnel_id:
-        raise HTTPException(status_code=403, detail="Can only view own profile")
-
-    user = db.query(User).filter(User.id == personnel_id, User.role == "PERSONNEL").first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Personnel not found")
-
-    if current_user.role in ["WELFARE_OFFICER", "ADMINISTRATOR"]:
-        audit = AuditLog(
-            user_id=current_user.id,
-            action="VIEW_PERSONNEL",
-            resource_type="PERSONNEL",
-            resource_id=personnel_id
-        )
-        db.add(audit)
-        db.commit()
-
-    return user
+    ip_address = request.client.host if request and request.client else None
+    return get_personnel_by_id(
+        db=db,
+        current_user=current_user,
+        personnel_id=personnel_id,
+        ip_address=ip_address
+    )

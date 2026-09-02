@@ -93,7 +93,9 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     
     return new_user
 
-@router.post("/login", response_model=Token)
+from app.api.rate_limiter import get_login_rate_limiter
+
+@router.post("/login", response_model=Token, dependencies=[Depends(get_login_rate_limiter())])
 def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     identifier = login_data.email.strip()
     user = db.query(User).filter(
@@ -103,13 +105,13 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     if not user or not verify_password(login_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email/ID or password",
+            detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if user.status != UserStatus.ACTIVE:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="User account is inactive"
+            detail="Invalid email or password"
         )
 
     user.last_login_at = datetime.now(timezone.utc)
@@ -145,7 +147,7 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         "user": user
     }
 
-@router.post("/refresh", response_model=Token)
+@router.post("/refresh", response_model=Token, dependencies=[Depends(get_login_rate_limiter())])
 def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
     token_hash = hash_refresh_token(request.refresh_token)
     session = db.query(RefreshSession).filter(RefreshSession.token_hash == token_hash).first()

@@ -1,36 +1,28 @@
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
-from app.core.config import settings
-from app.models import Base, Organization, Unit, User, WellnessCheckin, SupportRequest, Intervention, Notification, AuditLog
+from app.models import Organization, Unit, User, WellnessCheckin, SupportRequest, Intervention, Notification, AuditLog
 from app.models.enums import UserRole, UserStatus, UnitStatus, SupportRequestType, SupportRequestStatus, InterventionActionType, InterventionStatus, NotificationType, AuditAction
 from app.core.security import verify_password
-import uuid
 from datetime import date
-
-engine = create_engine(settings.DATABASE_URL)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from tests.conftest import TestingSessionLocal
 
 @pytest.fixture(scope="module")
 def db():
-    Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     yield db
     db.close()
-    Base.metadata.drop_all(bind=engine)
 
 def test_organization_creation(db):
-    org = Organization(organization_code="ORG1", name="Test Org")
+    org = Organization(organization_code="ORG_DB1", name="Test Org")
     db.add(org)
     db.commit()
     db.refresh(org)
     assert org.id is not None
-    assert org.organization_code == "ORG1"
+    assert org.organization_code == "ORG_DB1"
     
 def test_unit_creation(db):
-    org = db.query(Organization).first()
-    unit = Unit(organization_id=org.id, unit_code="U1", unit_name="Test Unit", status=UnitStatus.ACTIVE)
+    org = db.query(Organization).filter(Organization.organization_code == "ORG_DB1").first()
+    unit = Unit(organization_id=org.id, unit_code="U_DB1", unit_name="Test Unit", status=UnitStatus.ACTIVE)
     db.add(unit)
     db.commit()
     db.refresh(unit)
@@ -38,8 +30,8 @@ def test_unit_creation(db):
     assert unit.organization_id == org.id
 
 def test_user_creation_and_password(db):
-    org = db.query(Organization).first()
-    unit = db.query(Unit).first()
+    org = db.query(Organization).filter(Organization.organization_code == "ORG_DB1").first()
+    unit = db.query(Unit).filter(Unit.unit_code == "U_DB1").first()
     
     from app.core.security import get_password_hash
     hashed = get_password_hash("demo123")
@@ -47,9 +39,9 @@ def test_user_creation_and_password(db):
     user = User(
         organization_id=org.id, 
         unit_id=unit.id, 
-        user_code="USR1", 
+        user_code="USR_DB1", 
         name="Test User", 
-        email="test@example.com", 
+        email="test_db@example.com", 
         password_hash=hashed, 
         role=UserRole.PERSONNEL,
         status=UserStatus.ACTIVE
@@ -64,15 +56,15 @@ def test_user_creation_and_password(db):
     assert verify_password("demo123", user.password_hash) is True
 
 def test_duplicate_user_email_fails(db):
-    org = db.query(Organization).first()
-    unit = db.query(Unit).first()
+    org = db.query(Organization).filter(Organization.organization_code == "ORG_DB1").first()
+    unit = db.query(Unit).filter(Unit.unit_code == "U_DB1").first()
     
     user = User(
         organization_id=org.id, 
         unit_id=unit.id, 
-        user_code="USR2", 
+        user_code="USR_DB2", 
         name="Test User 2", 
-        email="test@example.com", # Same email as previous test
+        email="test_db@example.com", # Same email as previous test
         password_hash="hash", 
         role=UserRole.PERSONNEL,
         status=UserStatus.ACTIVE
@@ -83,15 +75,15 @@ def test_duplicate_user_email_fails(db):
     db.rollback()
 
 def test_duplicate_user_code_fails(db):
-    org = db.query(Organization).first()
-    unit = db.query(Unit).first()
+    org = db.query(Organization).filter(Organization.organization_code == "ORG_DB1").first()
+    unit = db.query(Unit).filter(Unit.unit_code == "U_DB1").first()
     
     user = User(
         organization_id=org.id, 
         unit_id=unit.id, 
-        user_code="USR1", # Same code as previous test
+        user_code="USR_DB1", # Same code as previous test
         name="Test User 3", 
-        email="test3@example.com", 
+        email="test_db3@example.com", 
         password_hash="hash", 
         role=UserRole.PERSONNEL,
         status=UserStatus.ACTIVE
@@ -102,7 +94,7 @@ def test_duplicate_user_code_fails(db):
     db.rollback()
 
 def test_wellness_checkin(db):
-    user = db.query(User).filter(User.user_code == "USR1").first()
+    user = db.query(User).filter(User.user_code == "USR_DB1").first()
     checkin = WellnessCheckin(
         personnel_id=user.id,
         checkin_date=date.today(),
@@ -119,7 +111,7 @@ def test_wellness_checkin(db):
     assert checkin.id is not None
 
 def test_support_request(db):
-    user = db.query(User).filter(User.user_code == "USR1").first()
+    user = db.query(User).filter(User.user_code == "USR_DB1").first()
     req = SupportRequest(
         personnel_id=user.id,
         request_type=SupportRequestType.GENERAL_WELLBEING,
@@ -132,13 +124,13 @@ def test_support_request(db):
     assert req.id is not None
 
 def test_intervention(db):
-    user = db.query(User).filter(User.user_code == "USR1").first()
+    user = db.query(User).filter(User.user_code == "USR_DB1").first()
     officer = User(
         organization_id=user.organization_id,
         unit_id=user.unit_id,
-        user_code="OFF1",
+        user_code="OFF_DB1",
         name="Officer",
-        email="officer@example.com",
+        email="officer_db@example.com",
         password_hash="hash",
         role=UserRole.WELFARE_OFFICER,
         status=UserStatus.ACTIVE
@@ -159,7 +151,7 @@ def test_intervention(db):
     assert intervention.id is not None
 
 def test_notification(db):
-    user = db.query(User).filter(User.user_code == "USR1").first()
+    user = db.query(User).filter(User.user_code == "USR_DB1").first()
     notif = Notification(
         user_id=user.id,
         notification_type=NotificationType.SYSTEM,
@@ -173,7 +165,7 @@ def test_notification(db):
     assert notif.id is not None
 
 def test_audit_log(db):
-    user = db.query(User).filter(User.user_code == "USR1").first()
+    user = db.query(User).filter(User.user_code == "USR_DB1").first()
     audit = AuditLog(
         user_id=user.id,
         action=AuditAction.LOGIN,
@@ -185,4 +177,3 @@ def test_audit_log(db):
     db.commit()
     db.refresh(audit)
     assert audit.id is not None
-
