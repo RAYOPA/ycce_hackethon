@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../../repositories/wellness_repository.dart';
+import '../../models/wellness_model.dart';
 import 'wellness_checkin_screen.dart';
 import 'home_screen.dart';
 
@@ -19,12 +20,36 @@ class WellnessHistoryScreen extends StatefulWidget {
 }
 
 class _WellnessHistoryScreenState extends State<WellnessHistoryScreen> {
-  final _repository = WellnessHistoryRepository();
+  final _repository = WellnessRepository();
+  List<WellnessCheckin>? _history;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    try {
+      final data = await _repository.getMyHistory();
+      if (mounted) {
+        setState(() {
+          _history = data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final history = _repository.getMockHistory();
-    final lastCheckIn = _repository.getLastCheckIn();
 
     return Scaffold(
       backgroundColor: backgroundLight,
@@ -71,63 +96,74 @@ class _WellnessHistoryScreenState extends State<WellnessHistoryScreen> {
               ),
               const SizedBox(height: 32),
 
-              // SECTION 1: STRESS TREND
-              _buildChartCard(
-                title: 'Stress Trend',
-                data: history.map((e) => e.stressScore.toDouble()).toList(),
-                lineColor: primaryNavy, // Using navy instead of red
-                minY: 0,
-                maxY: 5,
-              ),
-              const SizedBox(height: 24),
+              // LOADING STATE
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (_history == null || _history!.isEmpty)
+                const Center(child: Text('No wellness history found.'))
+              else ...[
+                // SECTION 1: STRESS TREND
+                _buildChartCard(
+                  title: 'Stress Trend',
+                  data: _history!.take(7).map((e) {
+                    if (e.stressLevel == 'HIGH') return 5.0;
+                    if (e.stressLevel == 'MODERATE') return 3.0;
+                    return 1.0;
+                  }).toList().reversed.toList(),
+                  lineColor: primaryNavy, // Using navy instead of red
+                  minY: 0,
+                  maxY: 5,
+                ),
+                const SizedBox(height: 24),
 
-              // SECTION 2: SUMMARY CARDS
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSummaryCard(
-                      icon: Icons.bedtime_outlined,
-                      iconColor: mutedGreen,
-                      title: 'Sleep',
-                      value: '6.8 h',
+                // SECTION 2: SUMMARY CARDS
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildSummaryCard(
+                        icon: Icons.bedtime_outlined,
+                        iconColor: mutedGreen,
+                        title: 'Sleep',
+                        value: '${_history!.first.sleepHours.toStringAsFixed(1)} h',
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildSummaryCard(
-                      icon: Icons.mood,
-                      iconColor: secondaryTeal,
-                      title: 'Mood',
-                      value: '3.8 / 5',
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildSummaryCard(
+                        icon: Icons.mood,
+                        iconColor: secondaryTeal,
+                        title: 'Mood',
+                        value: '${_history!.first.mentalScore} / 5',
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+                  ],
+                ),
+                const SizedBox(height: 24),
 
-              // SECTION 3: MOOD TREND
-              _buildChartCard(
-                title: 'Mood Trend',
-                data: history.map((e) => e.moodScore.toDouble()).toList(),
-                lineColor: secondaryTeal,
-                minY: 0,
-                maxY: 5,
-              ),
-              const SizedBox(height: 24),
+                // SECTION 3: MOOD TREND
+                _buildChartCard(
+                  title: 'Mood Trend',
+                  data: _history!.take(7).map((e) => e.mentalScore.toDouble()).toList().reversed.toList(),
+                  lineColor: secondaryTeal,
+                  minY: 0,
+                  maxY: 5,
+                ),
+                const SizedBox(height: 24),
 
-              // SECTION 4: WORKLOAD TREND
-              _buildChartCard(
-                title: 'Workload Trend',
-                data: history.map((e) => e.workloadScore.toDouble()).toList(),
-                lineColor: mutedGreen,
-                minY: 0,
-                maxY: 5,
-              ),
-              const SizedBox(height: 24),
+                // SECTION 4: PHYSICAL ENERGY TREND
+                _buildChartCard(
+                  title: 'Physical Energy Trend',
+                  data: _history!.take(7).map((e) => e.physicalScore.toDouble()).toList().reversed.toList(),
+                  lineColor: mutedGreen,
+                  minY: 0,
+                  maxY: 5,
+                ),
+                const SizedBox(height: 24),
 
-              // SECTION 5: LAST CHECK-IN
-              _buildLastCheckInCard(lastCheckIn?.date),
-              const SizedBox(height: 32),
+                // SECTION 5: LAST CHECK-IN
+                _buildLastCheckInCard(DateTime.tryParse(_history!.first.checkinDate)),
+                const SizedBox(height: 32),
+              ],
             ],
           ),
         ),

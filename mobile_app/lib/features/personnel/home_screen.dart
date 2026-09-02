@@ -4,6 +4,10 @@ import 'wellness_checkin_screen.dart';
 import 'wellness_history_screen.dart';
 import 'support_screen.dart';
 import 'profile_screen.dart';
+import 'notifications_screen.dart';
+import '../../models/user_model.dart';
+import '../../repositories/personnel_repository.dart';
+import '../../repositories/notification_repository.dart';
 
 // Brand Colors from previous specification
 const Color primaryNavy = Color(0xFF092328);
@@ -20,6 +24,33 @@ class PersonnelHome extends StatefulWidget {
 
 class PersonnelHomeState extends State<PersonnelHome> {
   int _currentIndex = 0;
+  UserProfile? _profile;
+  bool _isLoadingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final repo = PersonnelRepository();
+      final profile = await repo.getMyProfile();
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _isLoadingProfile = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingProfile = false;
+        });
+      }
+    }
+  }
 
   void setIndex(int index) {
     setState(() {
@@ -27,8 +58,8 @@ class PersonnelHomeState extends State<PersonnelHome> {
     });
   }
 
-  final List<Widget> _screens = [
-    const _HomeView(),
+  List<Widget> get _screens => [
+    _HomeView(profile: _profile, isLoading: _isLoadingProfile),
     const WellnessCheckInScreen(),
     const WellnessHistoryScreen(),
     const SupportScreen(),
@@ -91,7 +122,10 @@ class PersonnelHomeState extends State<PersonnelHome> {
 }
 
 class _HomeView extends StatelessWidget {
-  const _HomeView();
+  final UserProfile? profile;
+  final bool isLoading;
+
+  const _HomeView({this.profile, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -126,10 +160,19 @@ class _HomeView extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.notifications_none,
-                          color: primaryNavy),
-                      onPressed: () {},
+                    Stack(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.notifications_none,
+                              color: primaryNavy),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                            );
+                          },
+                        ),
+                        // An unread badge could be fetched and added here.
+                      ],
                     ),
                     const CircleAvatar(
                       backgroundColor: secondaryTeal,
@@ -150,14 +193,16 @@ class _HomeView extends StatelessWidget {
                 fontSize: 16,
               ),
             ),
-            const Text(
-              'Personnel P001',
-              style: TextStyle(
-                color: primaryNavy,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            isLoading
+                ? const CircularProgressIndicator()
+                : Text(
+                    profile != null ? '${profile!.name} (${profile!.userCode})' : 'Personnel User',
+                    style: const TextStyle(
+                      color: primaryNavy,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
             const SizedBox(height: 32),
 
             // WELLNESS CHECK-IN CARD

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../models/wellness_checkin.dart';
+import '../../models/wellness_model.dart';
+import '../../repositories/wellness_repository.dart';
 import 'wellness_checkin_success_screen.dart';
 
 // Brand Colors
@@ -24,7 +25,9 @@ class _WellnessCheckInScreenState extends State<WellnessCheckInScreen> {
 
   bool _showError = false;
 
-  void _submit() {
+  bool _isSubmitting = false;
+
+  Future<void> _submit() async {
     if (_sleepScore == null ||
         _moodScore == null ||
         _energyScore == null ||
@@ -36,24 +39,45 @@ class _WellnessCheckInScreenState extends State<WellnessCheckInScreen> {
       return;
     }
 
-    // Create the checkin model
-    final checkIn = WellnessCheckIn(
-      personnelId: 'P001', // Mock ID
-      date: DateTime.now(),
-      sleepQuality: _sleepScore!,
-      moodScore: _moodScore!,
-      energyScore: _energyScore!,
-      workloadScore: _workloadScore!,
-      stressScore: _stressScore!,
-    );
+    setState(() {
+      _isSubmitting = true;
+    });
 
-    // In a real app, this would be saved to a local db or sent to the backend.
-    debugPrint('Check-in saved locally: ${checkIn.toJson()}');
+    try {
+      final repo = WellnessRepository();
+      // stressScore mapped loosely, or we send it as string based on business rules
+      // For backend: stress_level enum is usually LOW, MODERATE, HIGH
+      String stressLevel = 'LOW';
+      if (_stressScore! >= 4) stressLevel = 'HIGH';
+      else if (_stressScore! == 3) stressLevel = 'MODERATE';
 
-    // Navigate to success screen
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const WellnessCheckInSuccessScreen()),
-    );
+      await repo.submitCheckin(
+        physicalScore: _energyScore!,
+        mentalScore: _moodScore!,
+        sleepHours: _sleepScore!.toDouble() * 2, // approximation
+        stressLevel: stressLevel,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const WellnessCheckInSuccessScreen()),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   @override
@@ -156,7 +180,7 @@ class _WellnessCheckInScreenState extends State<WellnessCheckInScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _submit,
+                  onPressed: _isSubmitting ? null : _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: secondaryTeal,
                     foregroundColor: Colors.white,
@@ -166,9 +190,15 @@ class _WellnessCheckInScreenState extends State<WellnessCheckInScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text('Submit Check-in',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(color: Colors.white),
+                        )
+                      : const Text('Submit Check-in',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
               const SizedBox(height: 24),

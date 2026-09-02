@@ -43,23 +43,35 @@ class _SupportRequestFormScreenState extends State<SupportRequestFormScreen> {
       _isSubmitting = true;
     });
 
-    final request = SupportRequest(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      personnelId: 'P001',
-      requestType: _selectedOption!,
-      message: _messageController.text.trim().isEmpty
-          ? null
-          : _messageController.text.trim(),
-      createdAt: DateTime.now(),
-    );
+    try {
+      // Map option to category (backend enum usually expects uppercase without spaces, we will send mapped or original)
+      String category = 'GENERAL_WELLBEING';
+      if (_selectedOption!.contains('Workload')) category = 'WORKLOAD';
+      else if (_selectedOption!.contains('Fatigue')) category = 'FATIGUE';
+      else if (_selectedOption!.contains('Personal')) category = 'PERSONAL_SUPPORT';
+      else if (_selectedOption!.contains('private')) category = 'PRIVATE_DISCUSSION';
 
-    await _repository.submitRequest(request);
+      await _repository.submitRequest(
+        category: category,
+        priority: 'STANDARD',
+        message: _messageController.text.trim(),
+      );
 
-    if (mounted) {
-      setState(() {
-        _isSubmitting = false;
-      });
-      _showConfirmationDialog();
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+        _showConfirmationDialog();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 

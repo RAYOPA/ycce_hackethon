@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/consent_settings.dart';
+import '../../models/user_model.dart';
+import '../../repositories/personnel_repository.dart';
+import '../../main.dart';
 import '../auth/login_screen.dart';
 import 'home_screen.dart';
 import 'manage_consent_screen.dart';
@@ -20,6 +24,33 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   ConsentSettings _consentSettings = ConsentSettings();
+  UserProfile? _profile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final repo = PersonnelRepository();
+      final profile = await repo.getMyProfile();
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,65 +81,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // PROFILE HEADER
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: secondaryTeal.withOpacity(0.1),
-                        shape: BoxShape.circle,
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (_profile != null)
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: secondaryTeal.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.person,
+                            color: secondaryTeal, size: 40),
                       ),
-                      child: const Icon(Icons.person,
-                          color: secondaryTeal, size: 40),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Personnel P001',
-                      style: TextStyle(
-                        color: primaryNavy,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                      const SizedBox(height: 16),
+                      Text(
+                        _profile!.name,
+                        style: const TextStyle(
+                          color: primaryNavy,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Unit U014',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 16,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Unit ${_profile!.unitId ?? 'Unknown'}',
+                        style: const TextStyle(
+                          color: Colors.black54,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(height: 40),
 
               // PERSONAL INFORMATION CARD
               _buildSectionTitle('Personal Information'),
               const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+              if (_profile != null)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _buildInfoRow('Personnel ID', _profile!.userCode),
+                      const Divider(height: 24, color: Colors.black12),
+                      _buildInfoRow('Email', _profile!.email),
+                      const Divider(height: 24, color: Colors.black12),
+                      _buildInfoRow('Unit', _profile!.unitId ?? 'Unknown'),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    _buildInfoRow('Personnel ID', 'P001'),
-                    const Divider(height: 24, color: Colors.black12),
-                    _buildInfoRow('Unit', 'U014'),
-                  ],
-                ),
-              ),
               const SizedBox(height: 32),
 
               // PRIVACY & CONSENT CARD
@@ -199,8 +236,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // LOGOUT BUTTON
               Center(
                 child: TextButton.icon(
-                  onPressed: () {
-                    // Navigate to Login screen and clear stack
+                  onPressed: () async {
+                    // Actual logout logic
+                    final auth = context.read<AuthProvider>();
+                    await auth.logout();
+                    if (!mounted) return;
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
                       (Route<dynamic> route) => false,
