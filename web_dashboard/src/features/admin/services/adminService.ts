@@ -24,64 +24,100 @@ export interface AuditLog {
   status: 'Success' | 'Failed';
 }
 
+import { fetchWithAuth } from '../../../utils/api';
+
 class AdminService {
-  private users: AdminUser[] = [
-    { id: 'W001', name: 'Demo Welfare Officer', email: 'welfare@demo.com', role: 'Welfare Officer', unit: 'Unit A', status: 'Active', lastActive: 'Today' },
-    { id: 'C001', name: 'Demo Commander', email: 'commander@demo.com', role: 'Commander', unit: 'All Units', status: 'Active', lastActive: 'Today' },
-    { id: 'A001', name: 'Demo Administrator', email: 'admin@demo.com', role: 'Administrator', unit: 'Organization', status: 'Active', lastActive: 'Today' },
-    { id: 'W002', name: 'Sarah Jenkins', email: 's.jenkins@demo.com', role: 'Welfare Officer', unit: 'Unit B', status: 'Active', lastActive: 'Yesterday' },
-    { id: 'W003', name: 'Michael Chen', email: 'm.chen@demo.com', role: 'Welfare Officer', unit: 'Unit C', status: 'Inactive', lastActive: '2 weeks ago' },
-  ];
-
-  private units: AdminUnit[] = [
-    { id: 'U001', name: 'Unit A', personnelCount: 320, status: 'Active' },
-    { id: 'U002', name: 'Unit B', personnelCount: 280, status: 'Active' },
-    { id: 'U003', name: 'Unit C', personnelCount: 350, status: 'Active' },
-    { id: 'U004', name: 'Unit D', personnelCount: 290, status: 'Active' },
-  ];
-
-  private logs: AuditLog[] = [
-    { id: 'L1', time: '09:42 PM', user: 'W001', action: 'Viewed welfare dashboard', resource: 'Dashboard', status: 'Success' },
-    { id: 'L2', time: '09:30 PM', user: 'A001', action: 'Updated user role', resource: 'User W002', status: 'Success' },
-    { id: 'L3', time: '08:52 PM', user: 'C001', action: 'Viewed unit analytics', resource: 'Unit A', status: 'Success' },
-    { id: 'L4', time: '08:15 PM', user: 'W002', action: 'Exported report', resource: 'Reports', status: 'Success' },
-    { id: 'L5', time: '07:40 PM', user: 'U999', action: 'Failed login attempt', resource: 'Auth', status: 'Failed' },
-  ];
 
   async getUsers(): Promise<AdminUser[]> {
-    return [...this.users];
+    const res = await fetchWithAuth('/admin/users');
+    if (!res.ok) throw new Error('Failed to fetch users');
+    const data = await res.json();
+    return data.items.map((u: any) => ({
+      id: u.user_code,
+      name: u.name,
+      email: u.email,
+      role: u.role === 'WELFARE_OFFICER' ? 'Welfare Officer' : (u.role === 'COMMANDER' ? 'Commander' : (u.role === 'ADMINISTRATOR' ? 'Administrator' : 'Personnel')),
+      unit: u.unit_id || 'All Units',
+      status: u.status === 'ACTIVE' ? 'Active' : 'Inactive',
+      lastActive: u.last_login_at || 'Never'
+    }));
   }
 
   async createUser(user: Omit<AdminUser, 'id' | 'lastActive'>): Promise<AdminUser> {
-    const newUser: AdminUser = {
-      ...user,
-      id: `${user.role.charAt(0)}${Math.floor(100 + Math.random() * 900)}`,
-      lastActive: 'Never',
+    const res = await fetchWithAuth('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_code: `U${Math.floor(1000 + Math.random() * 9000)}`,
+        name: user.name,
+        email: user.email,
+        password: 'ChangeMe123!', // default password for new users
+        role: user.role === 'Welfare Officer' ? 'WELFARE_OFFICER' : (user.role === 'Commander' ? 'COMMANDER' : 'ADMINISTRATOR'),
+        unit_id: user.unit === 'All Units' ? null : user.unit
+      })
+    });
+    if (!res.ok) throw new Error('Failed to create user');
+    const data = await res.json();
+    return {
+      id: data.user_code,
+      name: data.name,
+      email: data.email,
+      role: user.role,
+      unit: data.unit_id || 'All Units',
+      status: 'Active',
+      lastActive: 'Never'
     };
-    this.users = [newUser, ...this.users];
-    return newUser;
   }
 
   async disableUser(id: string): Promise<void> {
-    this.users = this.users.map(u => u.id === id ? { ...u, status: 'Inactive' } : u);
+    const res = await fetchWithAuth(`/admin/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'INACTIVE' })
+    });
+    if (!res.ok) throw new Error('Failed to disable user');
   }
 
   async getUnits(): Promise<AdminUnit[]> {
-    return [...this.units];
+    const res = await fetchWithAuth('/admin/units');
+    if (!res.ok) throw new Error('Failed to fetch units');
+    const data = await res.json();
+    return data.items.map((u: any) => ({
+      id: u.id,
+      name: u.unit_name,
+      personnelCount: 0, // Need extra query or analytics for this if needed
+      status: u.status === 'ACTIVE' ? 'Active' : 'Inactive'
+    }));
   }
 
   async createUnit(unit: Omit<AdminUnit, 'id' | 'personnelCount'>): Promise<AdminUnit> {
-    const newUnit: AdminUnit = {
-      ...unit,
-      id: `U00${this.units.length + 1}`,
+    const res = await fetchWithAuth('/admin/units', {
+      method: 'POST',
+      body: JSON.stringify({
+        unit_code: `U${Math.floor(100 + Math.random() * 900)}`,
+        unit_name: unit.name
+      })
+    });
+    if (!res.ok) throw new Error('Failed to create unit');
+    const data = await res.json();
+    return {
+      id: data.id,
+      name: data.unit_name,
       personnelCount: 0,
+      status: 'Active'
     };
-    this.units = [...this.units, newUnit];
-    return newUnit;
   }
 
   async getAuditLogs(): Promise<AuditLog[]> {
-    return [...this.logs];
+    const res = await fetchWithAuth('/admin/audit-logs');
+    if (!res.ok) throw new Error('Failed to fetch audit logs');
+    const data = await res.json();
+    return data.items.map((log: any) => ({
+      id: log.id,
+      time: log.timestamp,
+      user: log.user_id,
+      action: log.action,
+      resource: log.resource_type,
+      status: 'Success' // assuming success since it's recorded
+    }));
   }
 }
 

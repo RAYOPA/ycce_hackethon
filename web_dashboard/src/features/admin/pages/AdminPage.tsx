@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import type { AdminUser, AdminUnit, AuditLog } from '../services/adminService';
+import { useAuth } from '../../../contexts/AuthContext';
 
 // --- Sub Components ---
 
@@ -275,7 +276,8 @@ const AdminSystem = () => (
 
 export const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Overview');
-  const [isAdmin] = useState(true); // Toggle to test restriction
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Administrator';
 
   const tabs = [
     { id: 'Overview', icon: ShieldCheck },

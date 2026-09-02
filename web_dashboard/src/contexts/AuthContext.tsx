@@ -38,10 +38,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password = 'demo123') => {
     try {
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', password);
+
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString()
       });
 
       if (!response.ok) {
@@ -50,6 +54,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       const data = await response.json();
       localStorage.setItem('manrakshak_token', data.access_token);
+      if (data.refresh_token) {
+        localStorage.setItem('manrakshak_refresh_token', data.refresh_token);
+      }
       
       // Fetch current user details
       const userResp = await fetch(`${API_URL}/auth/me`, {
@@ -83,9 +90,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = () => {
+    // Optionally call POST /auth/logout in the background
+    fetch(`${API_URL}/auth/logout`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('manrakshak_token')}`
+      }
+    }).catch(() => {});
+
     setUser(null);
     localStorage.removeItem('manrakshak_auth_user');
     localStorage.removeItem('manrakshak_token');
+    localStorage.removeItem('manrakshak_refresh_token');
   };
 
   return (
