@@ -6,6 +6,7 @@ import type { Intervention, InterventionStatus } from '../models/intervention';
 import { format, isToday } from 'date-fns';
 import { CreateInterventionModal } from '../components/CreateInterventionModal';
 import { InterventionDetailModal } from '../components/InterventionDetailModal';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const InterventionsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,7 +26,8 @@ export const InterventionsPage: React.FC = () => {
   // Summary counts
   const [counts, setCounts] = useState({ dueToday: 0, upcoming: 0, inProgress: 0, completed: 0 });
 
-  const mockUserRole: string = 'Welfare Officer';
+  const { user } = useAuth();
+  const userRole = user?.role || 'Personnel';
 
   const loadData = async () => {
     setLoading(true);
@@ -60,10 +62,10 @@ export const InterventionsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (mockUserRole !== 'Commander') {
+    if (userRole !== 'Commander') {
       loadData();
     }
-  }, [activeTab, unitFilter, actionTypeFilter, searchQuery, mockUserRole]);
+  }, [activeTab, unitFilter, actionTypeFilter, searchQuery, userRole]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -82,7 +84,7 @@ export const InterventionsPage: React.FC = () => {
     }
   };
 
-  if (mockUserRole === 'Commander') {
+  if (userRole === 'Commander') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
         <ShieldAlert size={64} className="text-attention mb-6" />

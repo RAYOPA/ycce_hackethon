@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Check, Trash2, Calendar, TrendingUp, AlertCircle, FileText, Settings, ShieldCheck } from 'lucide-react';
 
 interface Notification {
@@ -10,43 +10,64 @@ interface Notification {
   read: boolean;
 }
 
-const initialNotifications: Notification[] = [
-  { id: 'N1', type: 'Follow-up', title: 'Follow-up due for P002', description: 'Workload review is scheduled for today.', time: '2 hours ago', read: false },
-  { id: 'N2', type: 'Trend', title: 'Unit A workload trend increased', description: 'Aggregate workload indicators increased during the selected period.', time: '5 hours ago', read: false },
-  { id: 'N3', type: 'Support', title: 'New welfare support request', description: 'A new support request is awaiting authorized review.', time: 'Today', read: false },
-  { id: 'N4', type: 'Report', title: 'Report generated', description: 'Your organizational welfare report is ready.', time: 'Yesterday', read: true },
-  { id: 'N5', type: 'System', title: 'System maintenance', description: 'Scheduled maintenance this weekend.', time: '2 days ago', read: true },
-];
+import { notificationService, AppNotification } from '../services/notificationService';
 
 export const NotificationsPage: React.FC = () => {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [filter, setFilter] = useState<'All' | 'Unread' | 'Follow-ups' | 'Trends' | 'Support' | 'System'>('All');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadNotifications();
+  }, [filter]);
+
+  const loadNotifications = async () => {
+    setLoading(true);
+    try {
+      const data = await notificationService.getNotifications({
+        type: filter,
+      });
+      setNotifications(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const handleMarkAsRead = (id: string) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
+    } catch (e) {
+      console.error(e);
+    }
   };
+
+
+
+  // Handle Mark All as Read replaced above
 
   const handleClearRead = () => {
-    if (confirm("Clear read notifications?")) {
+    // Backend doesn't support deleting notifications yet. Just filter them locally.
+    if (confirm("Clear read notifications from view?")) {
       setNotifications(notifications.filter(n => !n.read));
     }
   };
 
-  const filteredNotifications = notifications.filter(n => {
-    if (filter === 'All') return true;
-    if (filter === 'Unread') return !n.read;
-    if (filter === 'Follow-ups') return n.type === 'Follow-up';
-    if (filter === 'Trends') return n.type === 'Trend';
-    if (filter === 'Support') return n.type === 'Support';
-    if (filter === 'System') return n.type === 'System';
-    return true;
-  });
+  // filteredNotifications replaced by backend filtering and UI local unread filter if 'Unread' is selected
+  const filteredNotifications = filter === 'Unread' ? notifications.filter(n => !n.read) : notifications;
 
   const getIcon = (type: string) => {
     switch (type) {

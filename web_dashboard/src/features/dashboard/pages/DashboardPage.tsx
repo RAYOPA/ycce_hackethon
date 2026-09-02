@@ -27,13 +27,31 @@ export const DashboardPage: React.FC = () => {
     const loadDashboard = async () => {
       try {
         setLoading(true);
-        const res = await fetchWithAuth(`/analytics/dashboard-overview?time_range=${timeRange}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json.status === 'success') {
-            setDashboardData(json.data);
+        // We'll calculate a 'start_date' based on timeRange if we want, but for simplicity we'll just hit the endpoints
+        // which default to the last 30 days if no date is provided.
+        const resWellness = await fetchWithAuth(`/analytics/wellness`);
+        
+        let totalPersonnel = 0;
+        let trendData: any[] = [];
+        
+        if (resWellness.ok) {
+          const wellnessData = await resWellness.json();
+          totalPersonnel = wellnessData.active_personnel_count || 0;
+          
+          if (!wellnessData.insufficient_cohort) {
+             trendData = wellnessData.trend.map((t: any) => ({
+                date: t.date,
+                stress: (t.average_stress_score || 0) * 1000 // scaling for chart
+             }));
           }
         }
+        
+        setDashboardData({
+          totalPersonnel,
+          metrics: { elevatedCases: 0, followUps: 0, risingTrends: 0, cleared: 0 },
+          riskFactors: [],
+          trendData
+        });
       } catch (err) {
         console.error("Failed to load dashboard data", err);
       } finally {

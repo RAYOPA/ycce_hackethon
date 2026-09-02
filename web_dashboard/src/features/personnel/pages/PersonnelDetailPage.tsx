@@ -5,6 +5,7 @@ import { personnelService } from '../services/personnelService';
 import type { Personnel } from '../models/personnel';
 import { WellnessChart } from '../components/WellnessChart';
 import { InterventionModal } from '../components/InterventionModal';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const PersonnelDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,9 +16,8 @@ export const PersonnelDetailPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Mocking the logged-in user role (for the "Commander Restriction" requirement)
-  // In a real app this would come from an AuthContext
-  const mockUserRole: string = 'Welfare Officer'; 
+  const { user } = useAuth();
+  const userRole = user?.role || 'Personnel';
 
   useEffect(() => {
     const loadPersonnel = async () => {
@@ -43,7 +43,7 @@ export const PersonnelDetailPage: React.FC = () => {
     }
   };
 
-  if (mockUserRole === 'Commander') {
+  if (userRole === 'Commander') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
         <ShieldAlert size={64} className="text-attention mb-6" />
@@ -131,9 +131,9 @@ export const PersonnelDetailPage: React.FC = () => {
         <OverviewCard title="Data Status" value="Up to date" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {/* Left Column (Charts & Baseline) */}
-        <div className="lg:col-span-2 space-y-8">
+      <div className="flex flex-col lg:flex-row gap-8 mb-8">
+        {/* Left Column (Charts) */}
+        <div className="flex-1 space-y-8">
           
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-primary-navy">Wellness Trends</h2>
@@ -158,109 +158,10 @@ export const PersonnelDetailPage: React.FC = () => {
             <WellnessChart title="Workload Trend" data={historySlice(personnel.workloadHistory)} color="#F59E0B" domain={[1, 5]} />
             <WellnessChart title="Stress Indicator Trend" data={historySlice(personnel.stressHistory)} color="#092328" domain={[1, 5]} />
           </div>
-
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-primary-navy">Personal Pattern</h3>
-              <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-medium uppercase tracking-wider">
-                Prototype baseline analysis
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Typical Sleep</p>
-                <p className="text-xl font-bold text-primary-navy">{personnel.personalBaseline.typicalSleep.toFixed(1)} h</p>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Typical Workload</p>
-                <p className="text-xl font-bold text-primary-navy">{personnel.personalBaseline.typicalWorkload.toFixed(1)} / 5</p>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <p className="text-sm text-slate-500 mb-1">Typical Mood</p>
-                <p className="text-xl font-bold text-primary-navy">{personnel.personalBaseline.typicalMood.toFixed(1)} / 5</p>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <p className="text-sm text-slate-500 mb-1">Current Pattern</p>
-                <p className={`text-sm font-bold mt-2 ${personnel.personalBaseline.deviationDetected ? 'text-attention-700' : 'text-secondary-teal'}`}>
-                  {personnel.personalBaseline.deviationDetected ? 'Deviation detected' : 'Consistent with baseline'}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Right Column (AI, Factors, Recommendations) */}
-        <div className="space-y-6">
-          
-          {/* AI Analysis Placeholder */}
-          <div className="bg-gradient-to-br from-primary-navy to-slate-800 p-6 rounded-xl shadow-lg text-white">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold flex items-center gap-2">
-                <Activity size={20} className="text-secondary-teal" />
-                AI Welfare Analysis
-              </h3>
-              <span className="text-xs bg-white/10 text-white/80 px-2 py-1 rounded-md font-medium uppercase tracking-wider">
-                Prototype AI Output
-              </span>
-            </div>
-            
-            <div className="space-y-4 mb-6">
-              <div className="flex justify-between items-end border-b border-white/10 pb-2">
-                <span className="text-white/60 text-sm">Welfare Indicator</span>
-                <span className={`font-bold text-lg ${
-                  personnel.mockAIAnalysis.indicator === 'Elevated' ? 'text-attention' : 'text-positive'
-                }`}>
-                  {personnel.mockAIAnalysis.indicator}
-                </span>
-              </div>
-              <div className="flex justify-between items-end border-b border-white/10 pb-2">
-                <span className="text-white/60 text-sm">Confidence</span>
-                <span className="font-bold text-lg">{personnel.mockAIAnalysis.confidence}%</span>
-              </div>
-              <div className="flex justify-between items-end">
-                <span className="text-white/60 text-sm">Trend</span>
-                <span className="font-bold text-lg">{personnel.mockAIAnalysis.trend}</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-white/50 bg-black/20 p-3 rounded-lg leading-relaxed">
-              AI analysis will be connected to the ML engine in a future version. This is not a medical diagnosis.
-            </p>
-          </div>
-
-          {/* Contributing Factors */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-primary-navy flex items-center gap-2">
-                <BarChart2 size={20} className="text-slate-400" />
-                Contributing Factors
-              </h3>
-              <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-md font-medium uppercase tracking-wider">
-                Prototype explanation
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              {personnel.mockFactors.map((factor, idx) => (
-                <div key={idx}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-slate-700">{factor.factor}</span>
-                    <span className={factor.impact > 0 ? 'text-attention-700' : 'text-secondary-teal'}>
-                      {factor.impact > 0 ? '+' : ''}{factor.impact}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
-                    {/* Hacky mock SHAP visualization */}
-                    <div 
-                      className={`h-full rounded-full ${factor.impact > 0 ? 'bg-attention' : 'bg-secondary-teal'}`} 
-                      style={{ width: `${Math.abs(factor.impact) * 3}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Right Column (Recommendations) */}
+        <div className="w-full lg:w-96 space-y-6">
 
           {/* Recommendations */}
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
