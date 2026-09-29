@@ -21,6 +21,15 @@ class Settings(BaseSettings):
     
     # CORS
     CORS_ORIGINS: str = "" # Comma separated list. Use * for all in dev if needed, but not allowed with allow_credentials=True in prod
+    
+    # AI Gateway Settings
+    AI_PROVIDER: str = "openrouter"
+    OPEN_ROUTER_API_KEY: str = ""
+    OPEN_ROUTER_API: str = "" # Alias/fallback for OPEN_ROUTER_API in .env
+    OPEN_ROUTER_MODEL: str = "qwen/qwen3.8-27b:free"
+    OPEN_ROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+    AI_REQUEST_TIMEOUT_SECONDS: float = 30.0
+    
     model_config = SettingsConfigDict(
         env_file=".env", 
         env_file_encoding="utf-8", 
@@ -32,4 +41,9 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
 
+    @property
+    def effective_openrouter_api_key(self) -> str:
+        return self.OPEN_ROUTER_API_KEY.strip() or self.OPEN_ROUTER_API.strip() or ""
+
 settings = Settings()
+

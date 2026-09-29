@@ -1,5 +1,14 @@
 @echo off
+setlocal enabledelayedexpansion
+
 set "ADB=C:\Users\Lenovo\AppData\Local\Android\Sdk\platform-tools\adb.exe"
+if not exist "!ADB!" (
+    where adb >nul 2>nul
+    if !ERRORLEVEL! EQU 0 (
+        set "ADB=adb"
+    )
+)
+
 set "APK=%~dp0ManRakshak.apk"
 
 echo ===================================================

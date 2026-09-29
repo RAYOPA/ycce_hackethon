@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Download, Filter, X } from 'lucide-react';
 import { personnelService } from '../services/personnelService';
 import type { Personnel } from '../models/personnel';
@@ -7,14 +7,18 @@ import { format } from 'date-fns';
 
 export const PersonnelPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialFollowUp = searchParams.get('followUp') || 'All';
+  const initialTrend = searchParams.get('trend') || 'All';
+
   const [personnel, setPersonnel] = useState<Personnel[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [unitFilter, setUnitFilter] = useState('All Units');
-  const [trendFilter, setTrendFilter] = useState('All');
-  const [followUpFilter, setFollowUpFilter] = useState('All');
+  const [trendFilter, setTrendFilter] = useState(initialTrend);
+  const [followUpFilter, setFollowUpFilter] = useState(initialFollowUp);
   const [dateFilter, setDateFilter] = useState('Last 30 days');
 
   const loadData = async () => {
@@ -172,7 +176,11 @@ export const PersonnelPage: React.FC = () => {
                 </tr>
               ) : (
                 personnel.map(p => (
-                  <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                  <tr 
+                    key={p.id} 
+                    onClick={() => navigate(`/personnel/${p.id}`)}
+                    className="hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
                     <td className="px-6 py-4 font-medium text-slate-900">{p.personnelId}</td>
                     <td className="px-6 py-4 text-slate-600">{p.unitId}</td>
                     <td className="px-6 py-4 text-slate-600">{format(new Date(p.lastCheckIn), 'MMM d, yyyy')}</td>
@@ -197,7 +205,10 @@ export const PersonnelPage: React.FC = () => {
                     <td className="px-6 py-4 text-slate-600">{format(new Date(p.lastUpdated), 'MMM d, yyyy')}</td>
                     <td className="px-6 py-4">
                       <button 
-                        onClick={() => navigate(`/personnel/${p.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/personnel/${p.id}`);
+                        }}
                         className="text-secondary-teal font-medium hover:text-secondary-teal/80 transition-colors"
                       >
                         [ View ]

@@ -1,8 +1,15 @@
 @echo off
-set "JAVA_HOME=C:\Program Files\Android\Android Studio1\jbr"
-set "PATH=%JAVA_HOME%\bin;%PATH%"
+setlocal enabledelayedexpansion
 
-cd /d "c:\Users\Lenovo\Desktop\Mayank\Codes\SIH Manrakshak\mobile_app"
+if exist "C:\Program Files\Android\Android Studio1\jbr" (
+    set "JAVA_HOME=C:\Program Files\Android\Android Studio1\jbr"
+) else if exist "C:\Program Files\Android\Android Studio\jbr" (
+    set "JAVA_HOME=C:\Program Files\Android\Android Studio\jbr"
+)
+
+set "PATH=C:\src\flutter\bin;%JAVA_HOME%\bin;%PATH%"
+
+cd /d "%~dp0mobile_app"
 
 echo =======================================================
 echo  Launching Live App on Your Phone with HOT-RELOAD
@@ -14,3 +21,4 @@ echo.
 
 call flutter run
 pause
+

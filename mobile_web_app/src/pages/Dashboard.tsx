@@ -11,7 +11,7 @@ export default function Dashboard() {
     const fetchWellness = async () => {
       try {
         const res = await apiClient.get('/wellness/me');
-        setHistory(res.data);
+        setHistory(res.data.items || []);
       } catch (err) {
         console.error(err);
       } finally {

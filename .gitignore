@@ -1,13 +1,94 @@
+# ===========================
+# Python
+# ===========================
 venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+*.pytest_cache
+.coverage
+htmlcov/
+
+# ===========================
+# AI Models (large binary files - train locally)
+# ===========================
 models/
+*.pkl
+*.joblib
+
+# ===========================
+# Environment & Secrets
+# ===========================
+.env
+!.env.example
+*.env.local
+
+# ===========================
+# Databases
+# ===========================
+*.db
+*.sqlite
+*.sqlite3
+backend/*.db
+
+# ===========================
+# Large Binaries & Executables
+# ===========================
 *.exe
 *.zip
 *.apk
+cloudflared.exe
 cmake/
+cmake.zip
+vs_buildtools.exe
+
+# ===========================
+# IDE & Editor
+# ===========================
 .idea/
-*.db
-backend/*.db
+.vscode/
+.vs/
+*.suo
+*.user
 
+# ===========================
+# Node.js
+# ===========================
+node_modules/
 
+# ===========================
+# Flutter/Dart
+# ===========================
+.dart_tool/
+build/
+*.iml
+pubspec.lock
+
+# ===========================
+# Data Files (large)
+# ===========================
+synthetic_welfare_data.csv
+
+# ===========================
+# OS Files
+# ===========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===========================
+# Docker
+# ===========================
+.dockerignore
+
+# ===========================
+# Logs
+# ===========================
+*.log
+logs/

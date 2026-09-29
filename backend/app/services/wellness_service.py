@@ -64,6 +64,28 @@ def create_checkin(
             ip_address=ip_address
         )
         db.add(audit)
+
+        from app.services.notification_service import create_notification
+        from app.models.enums import NotificationType
+
+        if checkin_in.stress_score and checkin_in.stress_score >= 4:
+            create_notification(
+                db=db,
+                user_id=current_user.id,
+                notification_type=NotificationType.SUPPORT,
+                title="Rest & Recovery Advisory",
+                message="High stress/workload reported today. Consider scheduling a short decompression break or speaking with your peer support representative.",
+                related_resource=checkin.id
+            )
+        elif checkin_in.sleep_hours < 5.0:
+            create_notification(
+                db=db,
+                user_id=current_user.id,
+                notification_type=NotificationType.SUPPORT,
+                title="Rest & Recovery Advisory",
+                message="Low sleep duration recorded. Please prioritize rest and hydration today.",
+                related_resource=checkin.id
+            )
         db.commit()
         db.refresh(checkin)
 

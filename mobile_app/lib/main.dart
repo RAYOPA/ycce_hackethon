@@ -9,8 +9,7 @@ import 'features/auth/login_screen.dart';
 // Entry Point
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // TODO: Add firebase_options.dart and use DefaultFirebaseOptions.currentPlatform
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Constants.loadCustomBaseUrl();
 
   runApp(
     MultiProvider(
@@ -48,9 +47,8 @@ class AuthProvider extends ChangeNotifier {
   Future<void> login(String email, String password) async {
     final response = await ApiClient.post(
       '/auth/login',
-      customContentType: 'application/x-www-form-urlencoded',
       body: {
-        'username': email,
+        'email': email,
         'password': password,
       },
       includeAuth: false,
@@ -100,8 +98,38 @@ class AuthProvider extends ChangeNotifier {
     String? role,
     String? mobileNumber,
   }) async {
-    // We assume backend has no /auth/register since only Admin can create users in ManRakshak
-    throw Exception('Registration is handled via Organization Administrator only.');
+    String apiRole = 'PERSONNEL';
+    if (role == 'Commander') {
+      apiRole = 'COMMANDER';
+    } else if (role == 'Welfare Officer' || role == 'Welfare') {
+      apiRole = 'WELFARE_OFFICER';
+    }
+
+    final response = await ApiClient.post(
+      '/auth/register',
+      body: {
+        'name': name.trim(),
+        'email': email.trim().toLowerCase(),
+        'password': password,
+        'user_code': (userCode != null && userCode.trim().isNotEmpty) ? userCode.trim() : null,
+        'role': apiRole,
+        'mobile_number': (mobileNumber != null && mobileNumber.trim().isNotEmpty) ? mobileNumber.trim() : null,
+      },
+      includeAuth: false,
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return;
+    } else {
+      String message = 'Failed to register (${response.statusCode})';
+      try {
+        final error = jsonDecode(response.body);
+        if (error is Map && error.containsKey('detail')) {
+          message = error['detail'].toString();
+        }
+      } catch (_) {}
+      throw Exception(message);
+    }
   }
 
   Future<void> logout() async {

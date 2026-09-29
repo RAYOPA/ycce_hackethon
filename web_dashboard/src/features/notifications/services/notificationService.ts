@@ -15,7 +15,7 @@ export class NotificationService {
     if (filters?.read !== undefined) params.append('is_read', filters.read.toString());
     if (filters?.type && filters.type !== 'All') {
       const typeMap: any = {
-        'Follow-ups': 'FOLLOW_UP',
+        'Follow-ups': 'FOLLOWUP',
         'Trends': 'TREND_ALERT',
         'Support': 'SUPPORT_REQUEST',
         'System': 'SYSTEM_ALERT'
@@ -48,6 +48,7 @@ export class NotificationService {
 
   private mapType(type: string): 'Follow-up' | 'Trend' | 'Support' | 'Report' | 'System' {
     switch (type) {
+      case 'FOLLOWUP': return 'Follow-up';
       case 'FOLLOW_UP': return 'Follow-up';
       case 'TREND_ALERT': return 'Trend';
       case 'SUPPORT_REQUEST': return 'Support';

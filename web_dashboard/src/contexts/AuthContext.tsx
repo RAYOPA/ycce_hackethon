@@ -38,14 +38,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password = 'demo123') => {
     try {
-      const formData = new URLSearchParams();
-      formData.append('username', email);
-      formData.append('password', password);
-
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData.toString()
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
 
       if (!response.ok) {

@@ -11,16 +11,28 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   backend:
     build:
       context: ./backend
     ports:
       - "8000:8000"
+    env_file:
+      - ./backend/.env
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/manrakshak
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    volumes:
+      - ./models:/app/models
+    restart: unless-stopped
 
   web_dashboard:
     build:
@@ -29,6 +41,7 @@ services:
       - "8080:80"
     depends_on:
       - backend
+    restart: unless-stopped
 
   mobile_web_app:
     build:
@@ -37,6 +50,7 @@ services:
       - "8081:80"
     depends_on:
       - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:

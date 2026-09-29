@@ -43,7 +43,7 @@ def get_token(email: str):
     return res.json()["access_token"]
 
 def test_get_own_consent(setup_db):
-    email = setup_db.query(User).filter(User.role == UserRole.PERSONNEL).first().email
+    email = setup_db.query(User).filter(User.name == "PA GOV1").first().email
     token = get_token(email)
     headers = {"Authorization": f"Bearer {token}"}
     
@@ -53,7 +53,7 @@ def test_get_own_consent(setup_db):
     assert len(res.json()) == 0
 
 def test_update_own_consent(setup_db):
-    email = setup_db.query(User).filter(User.role == UserRole.PERSONNEL).first().email
+    email = setup_db.query(User).filter(User.name == "PA GOV1").first().email
     token = get_token(email)
     headers = {"Authorization": f"Bearer {token}"}
     
@@ -69,7 +69,7 @@ def test_update_own_consent(setup_db):
     assert data["status"] == "GRANTED"
 
 def test_admin_manage_governance(setup_db):
-    email = setup_db.query(User).filter(User.role == UserRole.ADMINISTRATOR).first().email
+    email = setup_db.query(User).filter(User.name == "ADM GOV1").first().email
     token = get_token(email)
     headers = {"Authorization": f"Bearer {token}"}
     

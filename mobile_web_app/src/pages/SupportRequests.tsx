@@ -9,8 +9,8 @@ export default function SupportRequests() {
 
   const fetchRequests = async () => {
     try {
-      const res = await apiClient.get('/support/me');
-      setRequests(res.data);
+      const res = await apiClient.get('/support/requests');
+      setRequests(res.data.items || []);
     } catch (err) {
       console.error(err);
     }

@@ -138,29 +138,49 @@ export const InterventionsPage: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div 
+          onClick={() => setActiveTab('Due Today')}
+          className={`p-4 rounded-xl border shadow-sm relative overflow-hidden cursor-pointer transition-all hover:shadow-md ${
+            activeTab === 'Due Today' ? 'border-attention bg-attention-50/20 ring-2 ring-attention/30' : 'bg-white border-slate-200 hover:border-slate-300'
+          }`}
+        >
           <div className="absolute right-0 top-0 w-2 h-full bg-attention"></div>
           <p className="text-sm text-slate-500 font-medium">Due Today</p>
           <p className="text-3xl font-bold text-primary-navy mt-1">{counts.dueToday}</p>
-          <p className="text-xs text-slate-400 mt-1">Demo data</p>
+          <p className="text-xs text-secondary-teal mt-1 font-medium flex items-center gap-1">Click to filter</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div 
+          onClick={() => setActiveTab('Upcoming')}
+          className={`p-4 rounded-xl border shadow-sm relative overflow-hidden cursor-pointer transition-all hover:shadow-md ${
+            activeTab === 'Upcoming' ? 'border-positive bg-positive-50/20 ring-2 ring-positive/30' : 'bg-white border-slate-200 hover:border-slate-300'
+          }`}
+        >
           <div className="absolute right-0 top-0 w-2 h-full bg-positive"></div>
           <p className="text-sm text-slate-500 font-medium">Upcoming</p>
           <p className="text-3xl font-bold text-primary-navy mt-1">{counts.upcoming}</p>
-          <p className="text-xs text-slate-400 mt-1">Demo data</p>
+          <p className="text-xs text-secondary-teal mt-1 font-medium flex items-center gap-1">Click to filter</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div 
+          onClick={() => setActiveTab('In Progress')}
+          className={`p-4 rounded-xl border shadow-sm relative overflow-hidden cursor-pointer transition-all hover:shadow-md ${
+            activeTab === 'In Progress' ? 'border-blue-500 bg-blue-50/20 ring-2 ring-blue-500/30' : 'bg-white border-slate-200 hover:border-slate-300'
+          }`}
+        >
           <div className="absolute right-0 top-0 w-2 h-full bg-blue-500"></div>
           <p className="text-sm text-slate-500 font-medium">In Progress</p>
           <p className="text-3xl font-bold text-primary-navy mt-1">{counts.inProgress}</p>
-          <p className="text-xs text-slate-400 mt-1">Demo data</p>
+          <p className="text-xs text-secondary-teal mt-1 font-medium flex items-center gap-1">Click to filter</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+        <div 
+          onClick={() => setActiveTab('Completed')}
+          className={`p-4 rounded-xl border shadow-sm relative overflow-hidden cursor-pointer transition-all hover:shadow-md ${
+            activeTab === 'Completed' ? 'border-slate-400 bg-slate-100 ring-2 ring-slate-400/30' : 'bg-white border-slate-200 hover:border-slate-300'
+          }`}
+        >
           <div className="absolute right-0 top-0 w-2 h-full bg-slate-300"></div>
           <p className="text-sm text-slate-500 font-medium">Completed</p>
           <p className="text-3xl font-bold text-primary-navy mt-1">{counts.completed}</p>
-          <p className="text-xs text-slate-400 mt-1">Demo data</p>
+          <p className="text-xs text-secondary-teal mt-1 font-medium flex items-center gap-1">Click to filter</p>
         </div>
       </div>
 
@@ -270,7 +290,11 @@ export const InterventionsPage: React.FC = () => {
                 </tr>
               ) : (
                 interventions.map(i => (
-                  <tr key={i.id} className="hover:bg-slate-50 transition-colors">
+                  <tr 
+                    key={i.id} 
+                    onClick={() => setSelectedIntervention(i)}
+                    className="hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
                     <td className="px-6 py-3.5 font-medium text-slate-900">{i.personnelId}</td>
                     <td className="px-6 py-3.5 text-slate-600">{i.unitId}</td>
                     <td className="px-6 py-3.5 text-slate-800 font-medium">{i.actionType}</td>
@@ -285,7 +309,10 @@ export const InterventionsPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-3.5">
                       <button 
-                        onClick={() => setSelectedIntervention(i)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedIntervention(i);
+                        }}
                         className="text-secondary-teal font-medium hover:text-secondary-teal/80 transition-colors"
                       >
                         [ View ]

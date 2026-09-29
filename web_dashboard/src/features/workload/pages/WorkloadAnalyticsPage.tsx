@@ -27,7 +27,7 @@ export const WorkloadAnalyticsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-primary-navy">Workload Analytics</h1>
+          <h1 className="text-3xl font-bold text-yellow-500">Workload Analytics</h1>
           <p className="text-slate-500 mt-1">Aggregate workload tracking to support organizational planning</p>
         </div>
         <div className="flex gap-2">
@@ -121,7 +121,7 @@ export const WorkloadAnalyticsPage: React.FC = () => {
                 />
                 <Legend iconType="circle" />
                 <Area type="monotone" name="Avg Weekly Hours" dataKey="avgHours" stroke="#0B4D56" strokeWidth={2} fillOpacity={1} fill="url(#colorAvg)" />
-                <Area type="monotone" name="Consecutive Days" dataKey="consecutiveDays" stroke="#16A34A" strokeWidth={2} fill="none" />
+                <Area type="monotone" name="Consecutive Days" dataKey="consecutiveDays" stroke="#EAB308" strokeWidth={2} fill="none" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

@@ -93,6 +93,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: primaryNavy),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.send, color: secondaryTeal),
+            tooltip: 'Send Test Notification',
+            onPressed: () async {
+              try {
+                await _repository.sendTestNotification();
+                _fetchNotifications();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Test notification sent!')),
+                  );
+                }
+              } catch (_) {}
+            },
+          ),
           TextButton(
             onPressed: _markAllAsRead,
             child: const Text('Mark all read', style: TextStyle(color: secondaryTeal)),
@@ -104,7 +119,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _notifications.isEmpty
-                ? const Center(child: Text('No notifications'))
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('No notifications'),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            try {
+                              await _repository.sendTestNotification();
+                              _fetchNotifications();
+                            } catch (_) {}
+                          },
+                          icon: const Icon(Icons.send),
+                          label: const Text('Send Test Notification'),
+                        ),
+                      ],
+                    ),
+                  )
                 : ListView.builder(
                     padding: const EdgeInsets.all(16.0),
                     itemCount: _notifications.length,

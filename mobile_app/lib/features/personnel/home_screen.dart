@@ -27,10 +27,26 @@ class PersonnelHomeState extends State<PersonnelHome> {
   UserProfile? _profile;
   bool _isLoadingProfile = true;
 
+  int _unreadNotifCount = 0;
+  final _notifRepo = NotificationRepository();
+
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoadingProfile = true);
+    await _loadProfile();
+    await _refreshUnreadCount();
+  }
+
+  Future<void> _refreshUnreadCount() async {
+    try {
+      final count = await _notifRepo.getUnreadCount();
+      if (mounted) setState(() => _unreadNotifCount = count);
+    } catch (_) {}
   }
 
   Future<void> _loadProfile() async {
@@ -165,13 +181,38 @@ class _HomeView extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.notifications_none,
                               color: primaryNavy),
-                          onPressed: () {
-                            Navigator.of(context).push(
+                          onPressed: () async {
+                            await Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const NotificationsScreen()),
                             );
+                            _refreshUnreadCount();
                           },
                         ),
-                        // An unread badge could be fetched and added here.
+                        if (_unreadNotifCount > 0)
+                          Positioned(
+                            right: 8,
+                            top: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.redAccent,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                '$_unreadNotifCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                     const CircleAvatar(
