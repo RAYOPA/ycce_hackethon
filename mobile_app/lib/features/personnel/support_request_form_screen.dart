@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../models/support_request.dart';
 import '../../repositories/support_repository.dart';
 
 // Brand Colors

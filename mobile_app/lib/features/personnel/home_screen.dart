@@ -75,7 +75,12 @@ class PersonnelHomeState extends State<PersonnelHome> {
   }
 
   List<Widget> get _screens => [
-    _HomeView(profile: _profile, isLoading: _isLoadingProfile),
+    _HomeView(
+      profile: _profile,
+      isLoading: _isLoadingProfile,
+      unreadNotifCount: _unreadNotifCount,
+      onRefreshNotifs: _refreshUnreadCount,
+    ),
     const WellnessCheckInScreen(),
     const WellnessHistoryScreen(),
     const SupportScreen(),
@@ -140,8 +145,15 @@ class PersonnelHomeState extends State<PersonnelHome> {
 class _HomeView extends StatelessWidget {
   final UserProfile? profile;
   final bool isLoading;
+  final int unreadNotifCount;
+  final VoidCallback? onRefreshNotifs;
 
-  const _HomeView({this.profile, this.isLoading = false});
+  const _HomeView({
+    this.profile,
+    this.isLoading = false,
+    this.unreadNotifCount = 0,
+    this.onRefreshNotifs,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -185,10 +197,10 @@ class _HomeView extends StatelessWidget {
                             await Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const NotificationsScreen()),
                             );
-                            _refreshUnreadCount();
+                            onRefreshNotifs?.call();
                           },
                         ),
-                        if (_unreadNotifCount > 0)
+                        if (unreadNotifCount > 0)
                           Positioned(
                             right: 8,
                             top: 8,
@@ -203,7 +215,7 @@ class _HomeView extends StatelessWidget {
                                 minHeight: 16,
                               ),
                               child: Text(
-                                '$_unreadNotifCount',
+                                '$unreadNotifCount',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,

@@ -43,6 +43,7 @@ backend/*.db
 *.exe
 *.zip
 *.apk
+!ManRakshak.apk
 cloudflared.exe
 cmake/
 cmake.zip

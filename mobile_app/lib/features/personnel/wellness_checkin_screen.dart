@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../models/wellness_model.dart';
 import '../../repositories/wellness_repository.dart';
 import 'wellness_checkin_success_screen.dart';
 
